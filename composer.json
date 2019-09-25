@@ -1,0 +1,24 @@
+{
+  "name": "tourhunter-com/yii2-dev-updater",
+  "description": "Yii2 component to provide composer and migrations update more eiser",
+  "keywords": ["yii2", "tourhunter", "update", "composer", "migration"],
+  "homepage": "https://github.com/tourhunter-com/yii2-dev-updater",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Andrii Chvyl",
+      "email": "achvyl@gmail.com",
+      "role": "Author"
+    }
+  ],
+  "require": {
+    "php": ">=5.6",
+    "ext-json": "*",
+    "yiisoft/yii2": "~2.0.14"
+  },
+  "autoload": {
+    "psr-4": {
+      "tourhunter\\devUpdater\\": "src/"
+    }
+  }
+}
