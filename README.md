@@ -3,7 +3,7 @@ yii2-dev-updater
 
 Yii2 component that provide more easier way for composer and migrations updating
 
-##Installation
+## Installation
 
 To add extension to your dependencies, execute:
 ```
