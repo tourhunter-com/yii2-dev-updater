@@ -1,7 +1,15 @@
 {
   "name": "tourhunter-com/yii2-dev-updater",
-  "description": "Yii2 component to provide composer and migrations update more eiser",
-  "keywords": ["yii2", "tourhunter", "update", "composer", "migration"],
+  "description": "Yii2 component to simplify composer and migrations updates",
+  "keywords": [
+    "yii2",
+    "extension",
+    "component",
+    "update",
+    "updater",
+    "composer",
+    "migration"
+  ],
   "homepage": "https://github.com/tourhunter-com/yii2-dev-updater",
   "type": "yii2-extension",
   "license": "MIT",
