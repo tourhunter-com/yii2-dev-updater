@@ -55,7 +55,7 @@ class UpdaterService {
     public function checkWarnings() {}
 
     /**
-     * Check service update Necessity
+     * Check service update necessity
      */
     public function checkUpdateNecessity() {}
 }

@@ -20,24 +20,24 @@ class MigrationUpdaterService extends UpdaterService {
      * @inheritdoc
      */
     public function checkUpdateNecessity() {
+        $currentRef = $this->_updateComponent->getGitHelper()->getHead();
+        $infoKey = DevUpdaterComponent::INFO_LAST_UPDATE_TIME . ':' . $this->title . ':' . $currentRef;
 
-        $lastMigrationTime = 0;
+        $lastCheckedTime = $this->_updateComponent->getLastUpdateInfo($infoKey, 0);
+        $lastCommitTime = $this->_updateComponent->getGitHelper()->getLastCommitTime();
 
-        $migrationsPath = \Yii::getAlias('@app/migrations/.');
-        if (file_exists($migrationsPath)) {
-            $lastMigrationModTime = filemtime($migrationsPath);
+        if ($lastCommitTime > $lastCheckedTime) {
 
-            try {
-                $lastMigrationTime = (int)\Yii::$app->db
-                    ->createCommand('SELECT apply_time FROM migration ORDER BY apply_time desc LIMIT 1')->queryScalar();
-            } catch (\Exception $e) {
+            $output = [];
+            $this->_updateComponent->runShellCommand('./yii migrate/new', $output);
 
+            $output = implode(' ', $output);
+            if(preg_match('/Found [0-9]+ new migration/', $output)) {
+                $this->_serviceUpdateIsNeeded = true;
+            } else {
+                $this->_updateComponent->setLastUpdateInfo($infoKey, time());
+                $this->_updateComponent->saveLastUpdateInfo();
             }
-
-            $this->_serviceUpdateIsNeeded = (
-                $lastMigrationModTime >= $lastMigrationTime
-                && $lastMigrationModTime >= $this->_updateComponent->getLastUpdateInfo(DevUpdaterComponent::INFO_LAST_UPDATE_TIME, 0)
-            );
         }
     }
 
@@ -50,8 +50,13 @@ class MigrationUpdaterService extends UpdaterService {
         $retCode = $this->_updateComponent->runShellCommand('./yii migrate/up --interactive=0', $output);
         if (0 === $retCode) {
             $status = true;
+            $infoKey = DevUpdaterComponent::INFO_LAST_UPDATE_TIME . ':' . $this->title . ':'
+                . $this->_updateComponent->getGitHelper()->getHead();
+            $this->_updateComponent->setLastUpdateInfo($infoKey, time());
+            $this->_updateComponent->saveLastUpdateInfo();
         } else {
-            $this->_updateComponent->addErrorInfo('Migrations update has been failed! Please check migration update manually.');
+            $this->_updateComponent->addErrorInfo('Migrations update has been failed! Please check the migration update manually.');
+            $this->_updateComponent->saveLastUpdateInfo();
         }
         return $status;
     }

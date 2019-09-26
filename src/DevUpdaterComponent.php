@@ -66,13 +66,16 @@ class DevUpdaterComponent extends Component {
      */
     protected $_lastUpdateInfo = null;
 
+    protected $_gitHelper = null;
+
     /**
      * @throws \yii\console\Exception
      * @throws \yii\web\NotFoundHttpException
      */
     public function init()
     {
-        if (in_array(YII_ENV, $this->allow_env)) {
+        $this->_gitHelper = new GitHelper();
+        if (in_array(YII_ENV, $this->allow_env) && false === $this->_gitHelper->getErrors()) {
             $this->_loadLastUpdateInfo();
             \Yii::$app->controllerMap[$this->controllerId] = DevUpdaterController::className();
 
@@ -87,6 +90,13 @@ class DevUpdaterComponent extends Component {
                 return;
             }
         }
+    }
+
+    /**
+     * @return GitHelper
+     */
+    public function getGitHelper() {
+        return $this->_gitHelper;
     }
 
     /**
@@ -105,10 +115,6 @@ class DevUpdaterComponent extends Component {
                     $ret = $updaterObject->runUpdate();
                     if (!$ret) break;
                 }
-                if ($ret) {
-                    $this->setLastUpdateInfo(self::INFO_LAST_UPDATE_TIME, time());
-                }
-                $this->saveLastUpdateInfo();
             }
         } catch (\Exception $e) {
             $ret = false;
@@ -124,8 +130,8 @@ class DevUpdaterComponent extends Component {
      */
     public function checkAllWarnings() {
         if(ini_get('safe_mode')){
-            $this->addWarning('Enabled safe_mode in php configuration blocks the ability to change runtime '
-                . 'restrictions. This can cause problems with updating process.');
+            $this->addWarning('The enabled \'safe_mode\' in php configuration blocks the ability to change  '
+                . 'the runtime duration. This might cause problems with the update process.');
         }
         foreach($this->_updaterServicesObjects as $updaterObject) {
             $updaterObject->checkWarnings();

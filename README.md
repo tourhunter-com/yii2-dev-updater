@@ -1,7 +1,7 @@
 yii2-dev-updater
 ====================================
 
-Yii2 component that provide more easier way for composer and migrations updating
+A Yii2 component that provides an easier way for composer and migrations updates.
 
 ## Installation
 
