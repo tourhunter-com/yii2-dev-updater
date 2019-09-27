@@ -23,6 +23,7 @@
   "support": {
     "issues": "https://github.com/tourhunter-com/yii2-dev-updater/issues?state=open",
     "source": "https://github.com/tourhunter-com/yii2-dev-updater"
+  },
   "require": {
     "php": ">=5.4",
     "ext-json": "*",
