@@ -78,7 +78,7 @@ use yii\helpers\Url;
             request.open('GET', '<?= Url::to([$devUpdater->controllerId . '/run']) ?>', true);
             request.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
             request.send();
-            setTimeout(function() { document.location.reload(); }, 100);
+            setTimeout(function() { document.location.reload(); }, 500);
         };
     </script>
 </head>

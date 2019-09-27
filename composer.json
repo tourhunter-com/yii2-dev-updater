@@ -1,6 +1,6 @@
 {
   "name": "tourhunter-com/yii2-dev-updater",
-  "description": "Yii2 component to simplify composer and migrations updates",
+  "description": "A Yii2 component to simplify composer and migrations updates",
   "keywords": [
     "yii2",
     "extension",
@@ -24,7 +24,7 @@
     "issues": "https://github.com/tourhunter-com/yii2-dev-updater/issues?state=open",
     "source": "https://github.com/tourhunter-com/yii2-dev-updater"
   "require": {
-    "php": ">=7.0",
+    "php": ">=5.4",
     "ext-json": "*",
     "yiisoft/yii2": "~2.0.14"
   },

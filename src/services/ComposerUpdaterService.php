@@ -20,26 +20,21 @@ class ComposerUpdaterService extends UpdaterService {
      * @inheritdoc
      */
     public function checkUpdateNecessity() {
-        $lastLockTime = 0;
+        $currentRef = $this->_updateComponent->getGitHelper()->getHead();
+        $infoKey = DevUpdaterComponent::INFO_LAST_UPDATE_TIME . ':' . $this->title . ':' . $currentRef;
 
-        $composerLockPath = \Yii::getAlias('@app/composer.lock');
+        $lastCheckedTime = $this->_updateComponent->getLastUpdateInfo($infoKey, 0);
+        $lastCommitTime = $this->_updateComponent->getGitHelper()->getLastCommitTime();
 
-        if (file_exists($composerLockPath)) {
-            $lastLockTime = filemtime($composerLockPath);
-        }
-
-        $composerJsonPath = \Yii::getAlias('@app/composer.json');
-        if (file_exists($composerJsonPath)) {
-            $lastJsonTime = filemtime($composerJsonPath);
-
-            if ($lastJsonTime >= $lastLockTime
-                && $lastJsonTime >= $this->_updateComponent->getLastUpdateInfo(DevUpdaterComponent::INFO_LAST_UPDATE_TIME, 0)
-            ) {
-                $retCode = $this->_updateComponent->runShellCommand('composer validate');
-                $this->_serviceUpdateIsNeeded = (2 === $retCode);
-                if (1 === $retCode) {
-                    $this->_updateComponent->addWarning('The composer.json file seems to have errors.');
-                }
+        if ($lastCommitTime > $lastCheckedTime) {
+            $retCode = $this->_updateComponent->runShellCommand('composer validate');
+            $this->_serviceUpdateIsNeeded = (2 === $retCode);
+            if (1 === $retCode) {
+                $this->_updateComponent->addWarning('The composer.json file seems to have errors.');
+            }
+            if (!$this->_serviceUpdateIsNeeded) {
+                $this->_updateComponent->setLastUpdateInfo($infoKey, time());
+                $this->_updateComponent->saveLastUpdateInfo();
             }
         }
     }
@@ -52,8 +47,13 @@ class ComposerUpdaterService extends UpdaterService {
         $retCode = $this->_updateComponent->runShellCommand($this->getComposerCommand() . ' install');
         if (0 === $retCode) {
             $status = true;
+            $infoKey = DevUpdaterComponent::INFO_LAST_UPDATE_TIME . ':' . $this->title . ':'
+                . $this->_updateComponent->getGitHelper()->getHead();
+            $this->_updateComponent->setLastUpdateInfo($infoKey, time());
+            $this->_updateComponent->saveLastUpdateInfo();
         } else {
-            $this->_updateComponent->addErrorInfo('Composer update has been failed! Please check composer update manually.');
+            $this->_updateComponent->addErrorInfo('Composer update has been failed! Please check the composer update manually.');
+            $this->_updateComponent->saveLastUpdateInfo();
         }
         return $status;
     }

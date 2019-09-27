@@ -1,6 +1,6 @@
 # yii2-dev-updater
 
-Yii2 component to simplify composer and migrations updates
+A Yii2 component to simplify composer and migrations updates
 
 ## Code of Conduct
 
