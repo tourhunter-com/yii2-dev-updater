@@ -16,25 +16,48 @@ class ComposerUpdaterService extends UpdaterService {
      */
     public $title = 'composer';
 
+    public function getInfoKey() {
+        $currentRef = $this->_updateComponent->getGitHelper()->getHead();
+        return DevUpdaterComponent::INFO_LAST_UPDATE_TIME . ':' . $this->title . ':' . $currentRef;
+    }
+
     /**
      * @inheritdoc
      */
     public function checkUpdateNecessity() {
-        $currentRef = $this->_updateComponent->getGitHelper()->getHead();
-        $infoKey = DevUpdaterComponent::INFO_LAST_UPDATE_TIME . ':' . $this->title . ':' . $currentRef;
-
-        $lastCheckedTime = $this->_updateComponent->getLastUpdateInfo($infoKey, 0);
+        $lastCheckedTime = $this->_updateComponent->getInfoStorage()->getLastUpdateInfo($this->getInfoKey(), 0);
         $lastCommitTime = $this->_updateComponent->getGitHelper()->getLastCommitTime();
 
         if ($lastCommitTime > $lastCheckedTime) {
-            $retCode = $this->_updateComponent->runShellCommand('composer validate');
-            $this->_serviceUpdateIsNeeded = (2 === $retCode);
-            if (1 === $retCode) {
-                $this->_updateComponent->addWarning('The composer.json file seems to have errors.');
+            $this->_fullCheckUpdateNecessity();
+        }
+    }
+
+    /**
+     * Full check composer updates necessity
+     */
+    protected function _fullCheckUpdateNecessity() {
+        $appPath = \Yii::getAlias('@app/');
+        $vendorPath = $appPath . 'vendor';
+        $lockFilename = $appPath . 'composer.lock';
+        $jsonFilename = $appPath . 'composer.json';
+        $installedFilename = $vendorPath . '/composer/installed.json';
+
+        if (file_exists($jsonFilename) && !is_dir($vendorPath)) {
+            $this->_serviceUpdateIsNeeded = true;
+        } else if (file_exists($lockFilename) && file_exists($installedFilename)){
+            $lockedPackages = $this->_mapPackages(json_decode(file_get_contents($lockFilename), true));
+            $installedPackages = $this->_mapPackages(json_decode(file_get_contents($installedFilename), true));
+
+            foreach ($lockedPackages as $name => $version) {
+                if (!isset($installedPackages[$name]) || $installedPackages[$name] != $version) {
+                    $this->_serviceUpdateIsNeeded = true;
+                    break;
+                }
             }
             if (!$this->_serviceUpdateIsNeeded) {
-                $this->_updateComponent->setLastUpdateInfo($infoKey, time());
-                $this->_updateComponent->saveLastUpdateInfo();
+                $this->_updateComponent->getInfoStorage()->setLastUpdateInfo($this->getInfoKey(), time());
+                $this->_updateComponent->getInfoStorage()->saveLastUpdateInfo();
             }
         }
     }
@@ -44,16 +67,16 @@ class ComposerUpdaterService extends UpdaterService {
      */
     public function runUpdate() {
         $status = false;
-        $retCode = $this->_updateComponent->runShellCommand($this->getComposerCommand() . ' install');
+        $retCode = $this->_updateComponent->runShellCommand($this->_getComposerCommand() . ' install');
         if (0 === $retCode) {
             $status = true;
             $infoKey = DevUpdaterComponent::INFO_LAST_UPDATE_TIME . ':' . $this->title . ':'
                 . $this->_updateComponent->getGitHelper()->getHead();
-            $this->_updateComponent->setLastUpdateInfo($infoKey, time());
-            $this->_updateComponent->saveLastUpdateInfo();
+            $this->_updateComponent->getInfoStorage()->setLastUpdateInfo($infoKey, time());
+            $this->_updateComponent->getInfoStorage()->saveLastUpdateInfo();
         } else {
-            $this->_updateComponent->addErrorInfo('Composer update has been failed! Please check the composer update manually.');
-            $this->_updateComponent->saveLastUpdateInfo();
+            $this->_updateComponent->getInfoStorage()->addErrorInfo('Composer update has been failed! Please check the composer update manually.');
+            $this->_updateComponent->getInfoStorage()->saveLastUpdateInfo();
         }
         return $status;
     }
@@ -61,7 +84,55 @@ class ComposerUpdaterService extends UpdaterService {
     /**
      * @return string
      */
-    protected function getComposerCommand() {
+    protected function _getComposerCommand() {
         return $this->_updateComponent->composerCommand;
+    }
+
+    /**
+     * @param $packagesArray
+     *
+     * @return array
+     */
+    protected function _mapPackages($packagesArray) {
+        $map = [];
+        if (isset($packagesArray['packages'])) {
+            $packagesArray = $packagesArray['packages'];
+        }
+        foreach ($packagesArray as $packageItem) {
+            $map[$packageItem['name']] = $packageItem['version'];
+        }
+        return $map;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function checkWarnings()
+    {
+        $appPath = \Yii::getAlias('@app/');
+        $vendorPath = $appPath . 'vendor';
+        $lockFilename = $appPath . 'composer.lock';
+        $jsonFilename = $appPath . 'composer.json';
+        $installedFilename = $vendorPath . '/composer/installed.json';
+
+        if (!file_exists($jsonFilename)) {
+            $this->_updateComponent->addWarning('The composer.json file is missing.');
+        }
+        if (!file_exists($lockFilename)) {
+            $this->_updateComponent->addWarning('The composer.lock file is missing. Please run \'composer update\' manually.');
+        }
+        if (!file_exists($installedFilename)) {
+            $this->_updateComponent->addWarning('The installed.json file is missing. Please run \'composer update\' manually.');
+        }
+
+        $output = [];
+        $this->_updateComponent->runShellCommand('composer validate', $output);
+        $outputString = implode(' ', $output);
+
+        if (false !== strpos($outputString, 'does not contain valid JSON')) {
+            $this->_updateComponent->addWarning('The composer.json file have errors.');
+        } else if (false !== strpos($outputString, 'The lock file is not up to date')) {
+            $this->_updateComponent->addWarning('The composer.lock file is not up to date. Please run \'composer update\' manually.');
+        }
     }
 }

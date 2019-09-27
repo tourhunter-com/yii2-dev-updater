@@ -1,6 +1,6 @@
 {
   "name": "tourhunter-com/yii2-dev-updater",
-  "description": "A Yii2 component that provides an easier way for composer and migrations updates.",
+  "description": "Yii2 component that provides an easier way for composer and migrations updates.",
   "keywords": ["yii2", "tourhunter", "update", "composer", "migration"],
   "homepage": "https://github.com/tourhunter-com/yii2-dev-updater",
   "license": "MIT",

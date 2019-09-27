@@ -23,7 +23,7 @@ class MigrationUpdaterService extends UpdaterService {
         $currentRef = $this->_updateComponent->getGitHelper()->getHead();
         $infoKey = DevUpdaterComponent::INFO_LAST_UPDATE_TIME . ':' . $this->title . ':' . $currentRef;
 
-        $lastCheckedTime = $this->_updateComponent->getLastUpdateInfo($infoKey, 0);
+        $lastCheckedTime = $this->_updateComponent->getInfoStorage()->getLastUpdateInfo($infoKey, 0);
         $lastCommitTime = $this->_updateComponent->getGitHelper()->getLastCommitTime();
 
         if ($lastCommitTime > $lastCheckedTime) {
@@ -35,8 +35,8 @@ class MigrationUpdaterService extends UpdaterService {
             if(preg_match('/Found [0-9]+ new migration/', $output)) {
                 $this->_serviceUpdateIsNeeded = true;
             } else {
-                $this->_updateComponent->setLastUpdateInfo($infoKey, time());
-                $this->_updateComponent->saveLastUpdateInfo();
+                $this->_updateComponent->getInfoStorage()->setLastUpdateInfo($infoKey, time());
+                $this->_updateComponent->getInfoStorage()->saveLastUpdateInfo();
             }
         }
     }
@@ -52,11 +52,11 @@ class MigrationUpdaterService extends UpdaterService {
             $status = true;
             $infoKey = DevUpdaterComponent::INFO_LAST_UPDATE_TIME . ':' . $this->title . ':'
                 . $this->_updateComponent->getGitHelper()->getHead();
-            $this->_updateComponent->setLastUpdateInfo($infoKey, time());
-            $this->_updateComponent->saveLastUpdateInfo();
+            $this->_updateComponent->getInfoStorage()->setLastUpdateInfo($infoKey, time());
+            $this->_updateComponent->getInfoStorage()->saveLastUpdateInfo();
         } else {
-            $this->_updateComponent->addErrorInfo('Migrations update has been failed! Please check the migration update manually.');
-            $this->_updateComponent->saveLastUpdateInfo();
+            $this->_updateComponent->getInfoStorage()->addErrorInfo('Migrations update has been failed! Please check the migration update manually.');
+            $this->_updateComponent->getInfoStorage()->saveLastUpdateInfo();
         }
         return $status;
     }
