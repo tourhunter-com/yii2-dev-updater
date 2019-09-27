@@ -11,7 +11,6 @@ use yii\base\Component;
 class DevUpdaterComponent extends Component {
 
     const INFO_LAST_UPDATE_TIME = 'last-update-time';
-    const INFO_LAST_UPDATE_ERRORS = 'last-update-errors';
 
     /**
      * @var string[]
@@ -62,10 +61,13 @@ class DevUpdaterComponent extends Component {
     protected $_updaterServicesObjects = [];
 
     /**
-     * @var null|array
+     * @var null|InfoStorage
      */
-    protected $_lastUpdateInfo = null;
+    protected $_infoStorage = null;
 
+    /**
+     * @var null|GitHelper
+     */
     protected $_gitHelper = null;
 
     /**
@@ -76,7 +78,6 @@ class DevUpdaterComponent extends Component {
     {
         $this->_gitHelper = new GitHelper();
         if (in_array(YII_ENV, $this->allow_env) && false === $this->_gitHelper->getErrors()) {
-            $this->_loadLastUpdateInfo();
             \Yii::$app->controllerMap[$this->controllerId] = DevUpdaterController::className();
 
             foreach ($this->updaterServices as $updaterServiceClass) {
@@ -84,12 +85,22 @@ class DevUpdaterComponent extends Component {
             }
             $this->checkAllUpdateNecessity();
 
-            list($route, $params) = \Yii::$app->getRequest()->resolve();
-            if ($this->getUpdateNecessity() && 0 !== strpos($route, $this->controllerId)) {
+            $requestData = \Yii::$app->getRequest()->resolve();
+            $route = $requestData[0];
+            if (($this->getUpdateNecessity() || $this->hasWarnings()) && 0 !== strpos($route, $this->controllerId)) {
                 \Yii::$app->getResponse()->redirect(\Yii::$app->urlManager->createUrl([$this->controllerId.'/index']));
-                return;
             }
         }
+    }
+
+    /**
+     * @return null|InfoStorage
+     */
+    public function getInfoStorage() {
+        if (is_null($this->_infoStorage)) {
+            $this->_infoStorage = new InfoStorage($this->lastUpdateInfoFilename);
+        }
+        return $this->_infoStorage;
     }
 
     /**
@@ -109,17 +120,19 @@ class DevUpdaterComponent extends Component {
         set_time_limit(0);
         try {
             if ($this->getUpdateNecessity()) {
-                $this->skipLastErrors();
-                $this->saveLastUpdateInfo();
+                $this->getInfoStorage()->skipLastErrors();
+                $this->getInfoStorage()->saveLastUpdateInfo();
                 foreach ($this->_updaterServicesObjects as $updaterObject) {
                     $ret = $updaterObject->runUpdate();
-                    if (!$ret) break;
+                    if (!$ret) {
+                        break;
+                    }
                 }
             }
         } catch (\Exception $e) {
             $ret = false;
-            $this->addErrorInfo($e->getMessage());
-            $this->saveLastUpdateInfo();
+            $this->getInfoStorage()->addErrorInfo($e->getMessage());
+            $this->getInfoStorage()->saveLastUpdateInfo();
         }
         $this->releaseLock();
         return $ret;
@@ -214,77 +227,6 @@ class DevUpdaterComponent extends Component {
     }
 
     /**
-     * get update time info
-     *
-     * @param $key
-     * @param null $default
-     * @return null
-     */
-    public function getLastUpdateInfo($key, $default = null) {
-        return isset($this->_lastUpdateInfo[$key]) ? $this->_lastUpdateInfo[$key] : $default;
-    }
-
-    /**
-     * set update time info
-     *
-     * @param $key
-     * @param $value
-     */
-    public function setLastUpdateInfo($key, $value) {
-        $this->_lastUpdateInfo[$key] = $value;
-    }
-
-    /**
-     * save update times data to lock file
-     */
-    public function saveLastUpdateInfo() {
-        file_put_contents(\Yii::getAlias($this->lastUpdateInfoFilename), json_encode($this->_lastUpdateInfo));
-    }
-
-    /**
-     * @param $error
-     */
-    public function addErrorInfo($error) {
-        if (!isset($this->_lastUpdateInfo[self::INFO_LAST_UPDATE_ERRORS])) {
-            $this->_lastUpdateInfo[self::INFO_LAST_UPDATE_ERRORS] = [];
-        }
-        $this->_lastUpdateInfo[self::INFO_LAST_UPDATE_ERRORS][] = $error;
-    }
-
-    /**
-     * @return string[]
-     */
-    public function getLastErrorsInfo() {
-        if (!isset($this->_lastUpdateInfo[self::INFO_LAST_UPDATE_ERRORS])) {
-            $this->_lastUpdateInfo[self::INFO_LAST_UPDATE_ERRORS] = [];
-        }
-        return $this->_lastUpdateInfo[self::INFO_LAST_UPDATE_ERRORS];
-    }
-
-    /**
-     *
-     */
-    public function skipLastErrors() {
-        if (isset($this->_lastUpdateInfo[self::INFO_LAST_UPDATE_ERRORS])) {
-            unset($this->_lastUpdateInfo[self::INFO_LAST_UPDATE_ERRORS]);
-        }
-    }
-
-    /**
-     * load update times data from file
-     */
-    protected function _loadLastUpdateInfo() {
-        $lastUpdateInfoFilename = \Yii::getAlias($this->lastUpdateInfoFilename);
-        if (file_exists($lastUpdateInfoFilename)) {
-            $lastUpdateInfoFileContent = file_get_contents(\Yii::getAlias($lastUpdateInfoFilename));
-            $this->_lastUpdateInfo = json_decode($lastUpdateInfoFileContent, true);
-        }
-        if (is_null($this->_lastUpdateInfo)) {
-            $this->_lastUpdateInfo = [];
-        }
-    }
-
-    /**
      * @return bool
      * @throws \yii\base\InvalidConfigException
      */
@@ -324,7 +266,7 @@ class DevUpdaterComponent extends Component {
         $filename = \Yii::getAlias($this->updatingLockFilename);
         $status = false;
         if (!file_exists($filename)) {
-            $status = touch($filename);
+            $status = (false !== file_put_contents($filename, getmypid()));
         }
         return $status;
     }

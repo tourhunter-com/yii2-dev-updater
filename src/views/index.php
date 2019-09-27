@@ -62,6 +62,10 @@ use yii\helpers\Url;
         .btn.btn-discard {
             background-color: #ff5722;
         }
+        .btn.disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
         .warning-text {
             color: #886600;
         }
@@ -78,7 +82,10 @@ use yii\helpers\Url;
             request.open('GET', '<?= Url::to([$devUpdater->controllerId . '/run']) ?>', true);
             request.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
             request.send();
-            setTimeout(function() { document.location.reload(); }, 500);
+            var runLinkEl = document.getElementById('btn-run');
+            runLinkEl.classList.add('disabled');
+            setTimeout(function() { document.location.reload(); }, 1000);
+            return false;
         };
     </script>
 </head>
@@ -96,7 +103,7 @@ use yii\helpers\Url;
     </div>
     <?php } ?>
 
-    <?php $errors = $devUpdater->getLastErrorsInfo(); ?>
+    <?php $errors = $devUpdater->getInfoStorage()->getLastErrorsInfo(); ?>
     <?php if (count($errors)) { ?>
         Errors:
         <div class="errors">
@@ -120,7 +127,7 @@ use yii\helpers\Url;
                 The project needs updating! (<?= implode(', ', $devUpdater->getNonUpdatedServiceTitles()) ?>)
             </div>
             <div class="btn-group">
-                <a class="btn btn-run" onclick="runUpdate()">Run</a>
+                <a class="btn btn-run" id="btn-run" onclick="return runUpdate()" href="">Run</a>
                 <a class="btn btn-discard" href="<?= Url::to([$devUpdater->controllerId . '/discard']) ?>">Discard</a>
             </div>
         <?php } else { ?>
@@ -129,7 +136,6 @@ use yii\helpers\Url;
             </div>
             <div class="btn-group">
                 <a class="btn btn-run" href="<?= Url::to(['/']) ?>">Return to site</a>
-
             </div>
         <?php }?>
     <?php } ?>
