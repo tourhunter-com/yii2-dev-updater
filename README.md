@@ -77,7 +77,7 @@ This parameter influences the controller name in the component page route.
 
 Defines a set of the active component update services, by default it looks this way:
 ```php
-    'updaterServices => [
+    'updaterServices' => [
          'tourhunter\devUpdater\services\MigrationUpdaterService',
          'tourhunter\devUpdater\services\ComposerUpdaterService',
      ],
