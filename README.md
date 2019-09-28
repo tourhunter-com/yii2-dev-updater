@@ -133,11 +133,10 @@ The settings in `/etc/sudoers`:
 www-data ALL=(ALL) NOPASSWD: /bin/composer,/var/www/myYii2Project/yii
 ```
 
-An essential thing is that you must show the right ways to the files used by the component.
+An essential thing is that you must show the right paths to the files used by the component.
 By default it is a console utility of Yii2 framework.
 
 Also make sure to comment the following code in `/etc/sudoers` if it is there:
-
 ```
 #Defaults    requiretty
 ```
