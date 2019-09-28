@@ -70,14 +70,14 @@ It is possible to set up a console command for the Composer launch, if it's diff
 This parameter influences the controller name in the component page route.
 
 ```php
-    'controllerId' = 'dev-updater',
+    'controllerId' => 'dev-updater',
 ```
 
 #### updaterServices
 
 Defines a set of the active component update services, by default it looks this way:
 ```php
-    'updaterServices = [
+    'updaterServices => [
          'tourhunter\devUpdater\services\MigrationUpdaterService',
          'tourhunter\devUpdater\services\ComposerUpdaterService',
      ],
@@ -90,7 +90,7 @@ Also it is possible to add a custom solution of the update logic, but that servi
 
 A file path to store the important information about the status of previous updates or errors.
 ```php
-    'lastUpdateInfoFilename' = '@runtime/devUpdaterInfo.json',
+    'lastUpdateInfoFilename' => '@runtime/devUpdaterInfo.json',
 ```
 
 #### updatingLockFilename
@@ -98,7 +98,7 @@ A file path to store the important information about the status of previous upda
 A lock file path that contains info of the update process execution. 
 
 ```php
-    'updatingLockFilename' = '@runtime/devUpdater.lock',
+    'updatingLockFilename' => '@runtime/devUpdater.lock',
 ```
 
 #### sudoUser
@@ -106,7 +106,7 @@ A lock file path that contains info of the update process execution.
 A username to execute update console commands.
 
 ```php
-    'sudoUser' = false,
+    'sudoUser' => false,
 ```
 
 
