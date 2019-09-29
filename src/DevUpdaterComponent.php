@@ -146,7 +146,8 @@ class DevUpdaterComponent extends Component
         return $ret;
     }
 
-    public function discardAllUpdates() {
+    public function discardAllUpdates()
+    {
         foreach ($this->_updaterServicesObjects as $updaterObject) {
             $this->getInfoStorage()->setLastUpdateInfo($updaterObject->getInfoKey(), time());
         }
