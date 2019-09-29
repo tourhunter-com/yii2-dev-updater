@@ -23,10 +23,7 @@ class MigrationUpdaterService extends UpdaterService
      */
     public function checkUpdateNecessity()
     {
-        $currentRef = $this->_updateComponent->getGitHelper()->getHead();
-        $infoKey = DevUpdaterComponent::INFO_LAST_UPDATE_TIME . ':' . $this->title . ':' . $currentRef;
-
-        $lastCheckedTime = $this->_updateComponent->getInfoStorage()->getLastUpdateInfo($infoKey, 0);
+        $lastCheckedTime = $this->_updateComponent->getInfoStorage()->getLastUpdateInfo($this->getInfoKey(), 0);
         $lastCommitTime = $this->_updateComponent->getGitHelper()->getLastCommitTime();
 
         if ($lastCommitTime > $lastCheckedTime) {
@@ -38,7 +35,7 @@ class MigrationUpdaterService extends UpdaterService
             if (preg_match('/Found [0-9]+ new migration/', $output)) {
                 $this->_serviceUpdateIsNeeded = true;
             } else {
-                $this->_updateComponent->getInfoStorage()->setLastUpdateInfo($infoKey, time());
+                $this->_updateComponent->getInfoStorage()->setLastUpdateInfo($this->getInfoKey(), time());
                 $this->_updateComponent->getInfoStorage()->saveLastUpdateInfo();
             }
         }
@@ -54,9 +51,8 @@ class MigrationUpdaterService extends UpdaterService
         $retCode = $this->_updateComponent->runShellCommand('./yii migrate/up --interactive=0', $output);
         if (0 === $retCode) {
             $status = true;
-            $infoKey = DevUpdaterComponent::INFO_LAST_UPDATE_TIME . ':' . $this->title . ':'
-                . $this->_updateComponent->getGitHelper()->getHead();
-            $this->_updateComponent->getInfoStorage()->setLastUpdateInfo($infoKey, time());
+
+            $this->_updateComponent->getInfoStorage()->setLastUpdateInfo($this->getInfoKey(), time());
             $this->_updateComponent->getInfoStorage()->saveLastUpdateInfo();
         } else {
             $this->_updateComponent->getInfoStorage()

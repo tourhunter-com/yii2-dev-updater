@@ -69,9 +69,7 @@ class DevUpdaterController extends Controller
      */
     public function actionDiscard()
     {
-        $this->devUpdater->getInfoStorage()->setLastUpdateInfo(DevUpdaterComponent::INFO_LAST_UPDATE_TIME, time());
-        $this->devUpdater->getInfoStorage()->saveLastUpdateInfo();
-
+        $this->devUpdater->discardAllUpdates();
         return $this->redirect([$this->devUpdater->controllerId . '/index']);
     }
 }
