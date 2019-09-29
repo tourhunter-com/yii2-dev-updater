@@ -7,9 +7,11 @@ use tourhunter\devUpdater\UpdaterService;
 
 /**
  * Class MigrationUpdaterService
+ *
  * @package tourhunter\devUpdater\services
  */
-class MigrationUpdaterService extends UpdaterService {
+class MigrationUpdaterService extends UpdaterService
+{
 
     /**
      * @var string
@@ -19,7 +21,8 @@ class MigrationUpdaterService extends UpdaterService {
     /**
      * @inheritdoc
      */
-    public function checkUpdateNecessity() {
+    public function checkUpdateNecessity()
+    {
         $currentRef = $this->_updateComponent->getGitHelper()->getHead();
         $infoKey = DevUpdaterComponent::INFO_LAST_UPDATE_TIME . ':' . $this->title . ':' . $currentRef;
 
@@ -32,7 +35,7 @@ class MigrationUpdaterService extends UpdaterService {
             $this->_updateComponent->runShellCommand('./yii migrate/new', $output);
 
             $output = implode(' ', $output);
-            if(preg_match('/Found [0-9]+ new migration/', $output)) {
+            if (preg_match('/Found [0-9]+ new migration/', $output)) {
                 $this->_serviceUpdateIsNeeded = true;
             } else {
                 $this->_updateComponent->getInfoStorage()->setLastUpdateInfo($infoKey, time());
@@ -44,7 +47,8 @@ class MigrationUpdaterService extends UpdaterService {
     /**
      * @inheritdoc
      */
-    public function runUpdate() {
+    public function runUpdate()
+    {
         $status = false;
         $output = '';
         $retCode = $this->_updateComponent->runShellCommand('./yii migrate/up --interactive=0', $output);
@@ -55,9 +59,11 @@ class MigrationUpdaterService extends UpdaterService {
             $this->_updateComponent->getInfoStorage()->setLastUpdateInfo($infoKey, time());
             $this->_updateComponent->getInfoStorage()->saveLastUpdateInfo();
         } else {
-            $this->_updateComponent->getInfoStorage()->addErrorInfo('Migrations update has been failed! Please check the migration update manually.');
+            $this->_updateComponent->getInfoStorage()
+                ->addErrorInfo('Migrations update has been failed! Please check the migration update manually.');
             $this->_updateComponent->getInfoStorage()->saveLastUpdateInfo();
         }
+
         return $status;
     }
 }

@@ -2,6 +2,7 @@
 /** @var \tourhunter\devUpdater\DevUpdaterComponent $devUpdater */
 
 use yii\helpers\Url;
+
 ?>
 
 <!DOCTYPE html>
@@ -46,9 +47,11 @@ use yii\helpers\Url;
             font-size: 200%;
             margin-bottom: 30px;
         }
+
         .btn-group {
             margin-top: 20px;
         }
+
         .btn-group .btn {
             color: black;
             text-decoration: none;
@@ -59,32 +62,39 @@ use yii\helpers\Url;
             border-radius: 4px;
             cursor: pointer;
         }
+
         .btn.btn-discard {
             background-color: #ff5722;
         }
+
         .btn.disabled {
             opacity: 0.5;
             cursor: not-allowed;
         }
+
         .warning-text {
             color: #886600;
         }
+
         .error-text {
             color: #dc3500;
         }
+
         .message {
             font-size: 120%;
         }
     </style>
     <script>
-        var runUpdate = function() {
+        var runUpdate = function () {
             var request = new XMLHttpRequest();
             request.open('GET', '<?= Url::to([$devUpdater->controllerId . '/run']) ?>', true);
             request.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
             request.send();
             var runLinkEl = document.getElementById('btn-run');
             runLinkEl.classList.add('disabled');
-            setTimeout(function() { document.location.reload(); }, 1000);
+            setTimeout(function () {
+                document.location.reload();
+            }, 1000);
             return false;
         };
     </script>
@@ -96,11 +106,11 @@ use yii\helpers\Url;
     </div>
     <?php if ($devUpdater->hasWarnings()) { ?>
         Warnings:
-    <div class="warnings">
-        <?php foreach ($devUpdater->getWarnings() as $warning) { ?>
-            <p class="warning-text">&#9888; <?= $warning ?></p>
-        <?php } ?>
-    </div>
+        <div class="warnings">
+            <?php foreach ($devUpdater->getWarnings() as $warning) { ?>
+                <p class="warning-text">&#9888; <?= $warning ?></p>
+            <?php } ?>
+        </div>
     <?php } ?>
 
     <?php $errors = $devUpdater->getInfoStorage()->getLastErrorsInfo(); ?>
@@ -118,26 +128,28 @@ use yii\helpers\Url;
             The updating process is running now!
         </div>
         <script>
-            setTimeout(function() { document.location.reload(); }, 3000);
+            setTimeout(function () {
+                document.location.reload();
+            }, 3000);
         </script>
     <?php } else { ?>
 
-        <?php if ($devUpdater->getUpdateNecessity()) { ?>
-            <div class="message">
-                The project needs updating! (<?= implode(', ', $devUpdater->getNonUpdatedServiceTitles()) ?>)
-            </div>
-            <div class="btn-group">
-                <a class="btn btn-run" id="btn-run" onclick="return runUpdate()" href="">Run</a>
-                <a class="btn btn-discard" href="<?= Url::to([$devUpdater->controllerId . '/discard']) ?>">Discard</a>
-            </div>
-        <?php } else { ?>
-            <div class="message">
-                The project doesn't need updating!
-            </div>
-            <div class="btn-group">
-                <a class="btn btn-run" href="<?= Url::to(['/']) ?>">Return to site</a>
-            </div>
-        <?php }?>
+    <?php if ($devUpdater->getUpdateNecessity()) { ?>
+        <div class="message">
+            The project needs updating! (<?= implode(', ', $devUpdater->getNonUpdatedServiceTitles()) ?>)
+        </div>
+        <div class="btn-group">
+            <a class="btn btn-run" id="btn-run" onclick="return runUpdate()" href="">Run</a>
+            <a class="btn btn-discard" href="<?= Url::to([$devUpdater->controllerId . '/discard']) ?>">Discard</a>
+        </div>
+    <?php } else { ?>
+        <div class="message">
+            The project doesn't need updating!
+        </div>
+        <div class="btn-group">
+            <a class="btn btn-run" href="<?= Url::to(['/']) ?>">Return to site</a>
+        </div>
+    <?php } ?>
     <?php } ?>
 </div>
 </body>

@@ -95,7 +95,7 @@ A file path to store the important information about the status of previous upda
 
 #### updatingLockFilename
 
-A lock file path that contains info of the update process execution. 
+A path to the lock file containing info of the update process execution.
 
 ```php
     'updatingLockFilename' => '@runtime/devUpdater.lock',

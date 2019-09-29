@@ -6,16 +6,18 @@ use yii\base\Component;
 
 /**
  * Class DevUpdaterComponent
+ *
  * @package tourhunter\devUpdater
  */
-class DevUpdaterComponent extends Component {
+class DevUpdaterComponent extends Component
+{
 
     const INFO_LAST_UPDATE_TIME = 'last-update-time';
 
     /**
      * @var string[]
      */
-    public $allow_env = [ 'dev' ];
+    public $allow_env = ['dev'];
 
     /**
      * @var string
@@ -88,7 +90,8 @@ class DevUpdaterComponent extends Component {
             $requestData = \Yii::$app->getRequest()->resolve();
             $route = $requestData[0];
             if (($this->getUpdateNecessity() || $this->hasWarnings()) && 0 !== strpos($route, $this->controllerId)) {
-                \Yii::$app->getResponse()->redirect(\Yii::$app->urlManager->createUrl([$this->controllerId.'/index']));
+                \Yii::$app->getResponse()
+                    ->redirect(\Yii::$app->urlManager->createUrl([$this->controllerId . '/index']));
             }
         }
     }
@@ -96,17 +99,20 @@ class DevUpdaterComponent extends Component {
     /**
      * @return null|InfoStorage
      */
-    public function getInfoStorage() {
+    public function getInfoStorage()
+    {
         if (is_null($this->_infoStorage)) {
             $this->_infoStorage = new InfoStorage($this->lastUpdateInfoFilename);
         }
+
         return $this->_infoStorage;
     }
 
     /**
      * @return GitHelper
      */
-    public function getGitHelper() {
+    public function getGitHelper()
+    {
         return $this->_gitHelper;
     }
 
@@ -114,7 +120,8 @@ class DevUpdaterComponent extends Component {
      * @return bool
      * @throws \yii\base\InvalidConfigException
      */
-    public function runAllUpdates() {
+    public function runAllUpdates()
+    {
         $ret = true;
         $this->acquireLock();
         set_time_limit(0);
@@ -135,18 +142,20 @@ class DevUpdaterComponent extends Component {
             $this->getInfoStorage()->saveLastUpdateInfo();
         }
         $this->releaseLock();
+
         return $ret;
     }
 
     /**
      * Check all warnings in services
      */
-    public function checkAllWarnings() {
-        if(ini_get('safe_mode')){
+    public function checkAllWarnings()
+    {
+        if (ini_get('safe_mode')) {
             $this->addWarning('The enabled \'safe_mode\' in php configuration blocks the ability to change  '
                 . 'the runtime duration. This might cause problems with the update process.');
         }
-        foreach($this->_updaterServicesObjects as $updaterObject) {
+        foreach ($this->_updaterServicesObjects as $updaterObject) {
             $updaterObject->checkWarnings();
         }
     }
@@ -154,8 +163,9 @@ class DevUpdaterComponent extends Component {
     /**
      * Check all update necessity in services
      */
-    public function checkAllUpdateNecessity() {
-        foreach($this->_updaterServicesObjects as $updaterObject) {
+    public function checkAllUpdateNecessity()
+    {
+        foreach ($this->_updaterServicesObjects as $updaterObject) {
             $updaterObject->checkUpdateNecessity();
         }
     }
@@ -163,7 +173,8 @@ class DevUpdaterComponent extends Component {
     /**
      * @return bool
      */
-    public function getUpdateNecessity() {
+    public function getUpdateNecessity()
+    {
         $status = false;
         foreach ($this->_updaterServicesObjects as $updaterObject) {
             if ($updaterObject->getServiceUpdateNecessity()) {
@@ -171,40 +182,46 @@ class DevUpdaterComponent extends Component {
                 break;
             }
         }
+
         return $status;
     }
 
     /**
      * @return string[]
      */
-    public function getNonUpdatedServiceTitles() {
+    public function getNonUpdatedServiceTitles()
+    {
         $titles = [];
-        foreach($this->_updaterServicesObjects as $servicesObject) {
+        foreach ($this->_updaterServicesObjects as $servicesObject) {
             if ($servicesObject->getServiceUpdateNecessity()) {
                 $titles[] = $servicesObject->title;
             }
         }
+
         return $titles;
     }
 
     /**
      * @param $warning
      */
-    public function addWarning($warning) {
+    public function addWarning($warning)
+    {
         $this->_warnings[] = $warning;
     }
 
     /**
      * @return string[]
      */
-    public function getWarnings() {
+    public function getWarnings()
+    {
         return $this->_warnings;
     }
 
     /**
      * @return bool
      */
-    public function hasWarnings() {
+    public function hasWarnings()
+    {
         return (0 < count($this->_warnings));
     }
 
@@ -213,7 +230,8 @@ class DevUpdaterComponent extends Component {
      *
      * @return bool|int|string
      */
-    public static function getRegisteredComponentId() {
+    public static function getRegisteredComponentId()
+    {
         $id = false;
         $components = \Yii::$app->getComponents(true);
         foreach ($components as $componentId => $component) {
@@ -223,6 +241,7 @@ class DevUpdaterComponent extends Component {
                 break;
             }
         }
+
         return $id;
     }
 
@@ -230,34 +249,40 @@ class DevUpdaterComponent extends Component {
      * @return bool
      * @throws \yii\base\InvalidConfigException
      */
-    public function isRunningUpdate() {
+    public function isRunningUpdate()
+    {
         $status = true;
         if ($this->acquireLock()) {
             $status = false;
             $this->releaseLock();
         }
+
         return $status;
     }
 
     /**
      * @param $command
      * @param null $output
+     *
      * @return null
      */
-    public function runShellCommand($command, &$output = null) {
+    public function runShellCommand($command, &$output = null)
+    {
         $retCode = null;
         $currentPath = getcwd();
         chdir(\Yii::getAlias('@app'));
         if (!empty($this->sudoUser)) {
-            $command = 'sudo -u '. $this->sudoUser . ' ' . $command;
+            $command = 'sudo -u ' . $this->sudoUser . ' ' . $command;
         }
         exec($command . ' 2>&1', $output, $retCode);
         chdir($currentPath);
+
         return $retCode;
     }
 
     /**
      * Acquires current updating process lock.
+     *
      * @return boolean lock acquiring result.
      * @throws \yii\base\InvalidConfigException
      */
@@ -268,11 +293,13 @@ class DevUpdaterComponent extends Component {
         if (!file_exists($filename)) {
             $status = (false !== file_put_contents($filename, getmypid()));
         }
+
         return $status;
     }
 
     /**
      * Release current updating process lock.
+     *
      * @return boolean lock release result.
      */
     protected function releaseLock()
@@ -282,6 +309,7 @@ class DevUpdaterComponent extends Component {
         if (file_exists($filename)) {
             $status = unlink($filename);
         }
+
         return $status;
     }
 }

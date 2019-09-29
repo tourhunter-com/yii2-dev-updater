@@ -7,9 +7,11 @@ use tourhunter\devUpdater\DevUpdaterComponent;
 
 /**
  * Class ComposerUpdaterService
+ *
  * @package tourhunter\devUpdater\services
  */
-class ComposerUpdaterService extends UpdaterService {
+class ComposerUpdaterService extends UpdaterService
+{
 
     /**
      * @var string
@@ -19,15 +21,18 @@ class ComposerUpdaterService extends UpdaterService {
     /**
      * @return string
      */
-    public function getInfoKey() {
+    public function getInfoKey()
+    {
         $currentRef = $this->_updateComponent->getGitHelper()->getHead();
+
         return DevUpdaterComponent::INFO_LAST_UPDATE_TIME . ':' . $this->title . ':' . $currentRef;
     }
 
     /**
      * @inheritdoc
      */
-    public function checkUpdateNecessity() {
+    public function checkUpdateNecessity()
+    {
         $lastCheckedTime = $this->_updateComponent->getInfoStorage()->getLastUpdateInfo($this->getInfoKey(), 0);
         $lastCommitTime = $this->_updateComponent->getGitHelper()->getLastCommitTime();
 
@@ -39,7 +44,8 @@ class ComposerUpdaterService extends UpdaterService {
     /**
      * Full check composer updates necessity
      */
-    protected function _fullCheckUpdateNecessity() {
+    protected function _fullCheckUpdateNecessity()
+    {
         $appPath = \Yii::getAlias('@app/');
         $vendorPath = $appPath . 'vendor';
         $lockFilename = $appPath . 'composer.lock';
@@ -48,7 +54,7 @@ class ComposerUpdaterService extends UpdaterService {
 
         if (file_exists($jsonFilename) && !is_dir($vendorPath)) {
             $this->_serviceUpdateIsNeeded = true;
-        } else if (file_exists($lockFilename) && file_exists($installedFilename)){
+        } elseif (file_exists($lockFilename) && file_exists($installedFilename)) {
             $lockedPackages = $this->_mapPackages(json_decode(file_get_contents($lockFilename), true));
             $installedPackages = $this->_mapPackages(json_decode(file_get_contents($installedFilename), true));
 
@@ -68,7 +74,8 @@ class ComposerUpdaterService extends UpdaterService {
     /**
      * @inheritdoc
      */
-    public function runUpdate() {
+    public function runUpdate()
+    {
         $status = false;
         $retCode = $this->_updateComponent->runShellCommand($this->_getComposerCommand() . ' install');
         if (0 === $retCode) {
@@ -78,16 +85,19 @@ class ComposerUpdaterService extends UpdaterService {
             $this->_updateComponent->getInfoStorage()->setLastUpdateInfo($infoKey, time());
             $this->_updateComponent->getInfoStorage()->saveLastUpdateInfo();
         } else {
-            $this->_updateComponent->getInfoStorage()->addErrorInfo('Composer update has been failed! Please check the composer update manually.');
+            $this->_updateComponent->getInfoStorage()
+                ->addErrorInfo('Composer update has been failed! Please check the composer update manually.');
             $this->_updateComponent->getInfoStorage()->saveLastUpdateInfo();
         }
+
         return $status;
     }
 
     /**
      * @return string
      */
-    protected function _getComposerCommand() {
+    protected function _getComposerCommand()
+    {
         return $this->_updateComponent->composerCommand;
     }
 
@@ -96,7 +106,8 @@ class ComposerUpdaterService extends UpdaterService {
      *
      * @return array
      */
-    protected function _mapPackages($packagesArray) {
+    protected function _mapPackages($packagesArray)
+    {
         $map = [];
         if (isset($packagesArray['packages'])) {
             $packagesArray = $packagesArray['packages'];
@@ -104,6 +115,7 @@ class ComposerUpdaterService extends UpdaterService {
         foreach ($packagesArray as $packageItem) {
             $map[$packageItem['name']] = $packageItem['version'];
         }
+
         return $map;
     }
 
@@ -134,7 +146,7 @@ class ComposerUpdaterService extends UpdaterService {
 
         if (false !== strpos($outputString, 'does not contain valid JSON')) {
             $this->_updateComponent->addWarning('The composer.json file have errors.');
-        } else if (false !== strpos($outputString, 'The lock file is not up to date')) {
+        } elseif (false !== strpos($outputString, 'The lock file is not up to date')) {
             $this->_updateComponent->addWarning('The composer.lock file is not up to date. Please run \'composer update\' manually.');
         }
     }
