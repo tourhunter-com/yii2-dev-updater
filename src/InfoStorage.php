@@ -30,7 +30,7 @@ class InfoStorage
     public function __construct($infoFilename)
     {
         $this->_infoFilename = $infoFilename;
-
+        $this->_loadLastUpdateInfo();
     }
 
     /**

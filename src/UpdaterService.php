@@ -44,6 +44,15 @@ class UpdaterService
     }
 
     /**
+     * @return string
+     */
+    public function getInfoKey()
+    {
+        $currentRef = $this->_updateComponent->getGitHelper()->getHead();
+        return DevUpdaterComponent::INFO_LAST_UPDATE_TIME . ':' . $this->title . ':' . $currentRef;
+    }
+
+    /**
      * Service update process logic
      *
      * @return bool

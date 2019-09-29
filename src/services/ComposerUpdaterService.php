@@ -19,16 +19,6 @@ class ComposerUpdaterService extends UpdaterService
     public $title = 'composer';
 
     /**
-     * @return string
-     */
-    public function getInfoKey()
-    {
-        $currentRef = $this->_updateComponent->getGitHelper()->getHead();
-
-        return DevUpdaterComponent::INFO_LAST_UPDATE_TIME . ':' . $this->title . ':' . $currentRef;
-    }
-
-    /**
      * @inheritdoc
      */
     public function checkUpdateNecessity()
