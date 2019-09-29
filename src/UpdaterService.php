@@ -4,9 +4,11 @@ namespace tourhunter\devUpdater;
 
 /**
  * Class UpdaterService
+ *
  * @package tourhunter\devUpdater
  */
-class UpdaterService {
+class UpdaterService
+{
 
     /**
      * @var string
@@ -26,12 +28,14 @@ class UpdaterService {
     /**
      * @return bool
      */
-    public function getServiceUpdateNecessity() {
+    public function getServiceUpdateNecessity()
+    {
         return $this->_serviceUpdateIsNeeded;
     }
 
     /**
      * UpdaterService constructor.
+     *
      * @param DevUpdaterComponent $component
      */
     public function __construct(DevUpdaterComponent $component)
@@ -44,7 +48,8 @@ class UpdaterService {
      *
      * @return bool
      */
-    public function runUpdate() {
+    public function runUpdate()
+    {
         return true;
     }
 
@@ -52,10 +57,10 @@ class UpdaterService {
      * Check environment warnings
      * And add that via $this->_updaterComponent->addWarning(...)
      */
-    public function checkWarnings() {}
+    public function checkWarnings() { }
 
     /**
      * Check service update necessity
      */
-    public function checkUpdateNecessity() {}
+    public function checkUpdateNecessity() { }
 }

@@ -42,12 +42,13 @@ class GitHelper extends BaseObject
      */
     public function getErrors()
     {
-        $error = false ;
+        $error = false;
         if (!file_exists($this->path)) {
             $error = 'Git main folder not found.';
-        } else if (!file_exists($this->path . 'HEAD')) {
+        } elseif (!file_exists($this->path . 'HEAD')) {
             $error = "HEAD file not found.";
         }
+
         return $error;
     }
 
@@ -60,13 +61,15 @@ class GitHelper extends BaseObject
             $filename = $this->path . 'HEAD';
             $this->_head = str_replace('ref: ', '', file_get_contents($filename));
         }
+
         return $this->_head;
     }
 
     /**
      * @return bool|int|null
      */
-    public function getLastCommitTime() {
+    public function getLastCommitTime()
+    {
         if (is_null($this->_lastCommitTime)) {
             $time = 0;
             $logHeadFilename = $this->path . 'logs/HEAD';
@@ -90,6 +93,7 @@ class GitHelper extends BaseObject
             }
             $this->_lastCommitTime = $time;
         }
+
         return $this->_lastCommitTime;
     }
 }
