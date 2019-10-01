@@ -2,7 +2,7 @@
 
 namespace tourhunter\devUpdater\services;
 
-use tourhunter\devUpdater\DevUpdaterComponent;
+use tourhunter\devUpdater\MigrationHelper;
 use tourhunter\devUpdater\UpdaterService;
 
 /**
@@ -19,7 +19,26 @@ class MigrationUpdaterService extends UpdaterService
     public $title = 'migrations';
 
     /**
-     * @inheritdoc
+     * @var null|MigrationHelper
+     */
+    protected $_migrationHelper = null;
+
+    /**
+     * @return null|object|MigrationHelper
+     * @throws \yii\base\InvalidConfigException
+     */
+    public function getMigrationHelper()
+    {
+        if (is_null($this->_migrationHelper)) {
+            $this->_migrationHelper = \Yii::createObject(MigrationHelper::className(), ['MigrationHelper', \Yii::$app]);
+        }
+
+        return $this->_migrationHelper;
+    }
+
+
+    /**
+     * @throws \yii\base\InvalidConfigException
      */
     public function checkUpdateNecessity()
     {
@@ -27,14 +46,9 @@ class MigrationUpdaterService extends UpdaterService
         $lastCommitTime = $this->_updateComponent->getGitHelper()->getLastCommitTime();
 
         if ($lastCommitTime > $lastCheckedTime) {
-
-            $output = [];
-            $this->_updateComponent->runShellCommand('./yii migrate/new', $output);
-
-            $output = implode(' ', $output);
-            if (preg_match('/Found [0-9]+ new migration/', $output)) {
-                $this->_serviceUpdateIsNeeded = true;
-            } else {
+            $newMigrations = $this->getMigrationHelper()->getNewMigrations();
+            $this->_serviceUpdateIsNeeded = !empty($newMigrations);
+            if (!$this->_serviceUpdateIsNeeded) {
                 $this->_updateComponent->getInfoStorage()->setLastUpdateInfo($this->getInfoKey(), time());
                 $this->_updateComponent->getInfoStorage()->saveLastUpdateInfo();
             }
@@ -47,17 +61,17 @@ class MigrationUpdaterService extends UpdaterService
     public function runUpdate()
     {
         $status = false;
-        $output = '';
-        $retCode = $this->_updateComponent->runShellCommand('./yii migrate/up --interactive=0', $output);
-        if (0 === $retCode) {
+        if ($this->getMigrationHelper()->runUpdate()) {
             $status = true;
-
             $this->_updateComponent->getInfoStorage()->setLastUpdateInfo($this->getInfoKey(), time());
             $this->_updateComponent->getInfoStorage()->saveLastUpdateInfo();
         } else {
-            $this->_updateComponent->getInfoStorage()
-                ->addErrorInfo('Migrations update has been failed! Please check the migration update manually.');
-            $this->_updateComponent->getInfoStorage()->saveLastUpdateInfo();
+            $output = trim(implode(' ', $this->getMigrationHelper()->getOutput()));
+            if (!empty($output)) {
+                $this->_updateComponent->getInfoStorage()
+                    ->addErrorInfo($output);
+                $this->_updateComponent->getInfoStorage()->saveLastUpdateInfo();
+            }
         }
 
         return $status;

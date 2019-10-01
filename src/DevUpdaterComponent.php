@@ -3,6 +3,7 @@
 namespace tourhunter\devUpdater;
 
 use yii\base\Component;
+use yii\web\Application;
 
 /**
  * Class DevUpdaterComponent
@@ -79,19 +80,26 @@ class DevUpdaterComponent extends Component
     public function init()
     {
         $this->_gitHelper = new GitHelper();
-        if (in_array(YII_ENV, $this->allow_env) && false === $this->_gitHelper->getErrors()) {
+        if (in_array(YII_ENV, $this->allow_env) && \Yii::$app instanceof Application
+            && false === $this->_gitHelper->getErrors()) {
+
             \Yii::$app->controllerMap[$this->controllerId] = DevUpdaterController::className();
-
-            foreach ($this->updaterServices as $updaterServiceClass) {
-                $this->_updaterServicesObjects[] = new $updaterServiceClass($this);
-            }
-            $this->checkAllUpdateNecessity();
-
             $requestData = \Yii::$app->getRequest()->resolve();
             $route = $requestData[0];
-            if (($this->getUpdateNecessity() || $this->hasWarnings()) && 0 !== strpos($route, $this->controllerId)) {
-                \Yii::$app->getResponse()
-                    ->redirect(\Yii::$app->urlManager->createUrl([$this->controllerId . '/index']));
+
+            if (!\Yii::$app->request->isAjax || 0 == strpos($route, $this->controllerId)) {
+
+                foreach ($this->updaterServices as $updaterServiceClass) {
+                    $this->_updaterServicesObjects[] = new $updaterServiceClass($this);
+                }
+                $this->checkAllUpdateNecessity();
+
+
+                if (($this->getUpdateNecessity() || $this->hasWarnings()) && 0 !== strpos($route,
+                        $this->controllerId)) {
+                    \Yii::$app->getResponse()
+                        ->redirect(\Yii::$app->urlManager->createUrl([$this->controllerId . '/index']));
+                }
             }
         }
     }
@@ -123,25 +131,28 @@ class DevUpdaterComponent extends Component
     public function runAllUpdates()
     {
         $ret = true;
-        $this->acquireLock();
-        set_time_limit(0);
-        try {
-            if ($this->getUpdateNecessity()) {
-                $this->getInfoStorage()->skipLastErrors();
-                $this->getInfoStorage()->saveLastUpdateInfo();
-                foreach ($this->_updaterServicesObjects as $updaterObject) {
-                    $ret = $updaterObject->runUpdate();
-                    if (!$ret) {
-                        break;
+        if ($this->acquireLock()) {
+            set_time_limit(0);
+            try {
+                if ($this->getUpdateNecessity()) {
+                    $this->getInfoStorage()->skipLastErrors();
+                    $this->getInfoStorage()->saveLastUpdateInfo();
+                    foreach ($this->_updaterServicesObjects as $updaterObject) {
+                        $ret = $updaterObject->runUpdate();
+                        if (!$ret) {
+                            break;
+                        }
                     }
                 }
+            } catch (\Exception $e) {
+                $ret = false;
+                $this->getInfoStorage()->addErrorInfo($e->getMessage());
+                $this->getInfoStorage()->saveLastUpdateInfo();
             }
-        } catch (\Exception $e) {
+            $this->releaseLock();
+        } else {
             $ret = false;
-            $this->getInfoStorage()->addErrorInfo($e->getMessage());
-            $this->getInfoStorage()->saveLastUpdateInfo();
         }
-        $this->releaseLock();
 
         return $ret;
     }
@@ -173,8 +184,11 @@ class DevUpdaterComponent extends Component
      */
     public function checkAllUpdateNecessity()
     {
-        foreach ($this->_updaterServicesObjects as $updaterObject) {
-            $updaterObject->checkUpdateNecessity();
+        if ($this->acquireLock()) {
+            foreach ($this->_updaterServicesObjects as $updaterObject) {
+                $updaterObject->checkUpdateNecessity();
+            }
+            $this->releaseLock();
         }
     }
 
