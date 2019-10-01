@@ -32,7 +32,7 @@ to the require section of your `composer.json` file.
 
 ## Usage
 
-Once the extension is installed, add following code to your application configuration:
+Once the extension is installed, add following code to your application web.php configuration file:
 
 ```php
 return [
@@ -46,6 +46,7 @@ return [
     ]
 ]
 ```
+An important note: trying to use the component for a console application will have no effect.
 
 Following properties are available for customizing the updater component behavior.
 

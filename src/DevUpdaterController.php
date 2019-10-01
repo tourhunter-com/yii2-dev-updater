@@ -70,6 +70,7 @@ class DevUpdaterController extends Controller
     public function actionDiscard()
     {
         $this->devUpdater->discardAllUpdates();
+
         return $this->redirect([$this->devUpdater->controllerId . '/index']);
     }
 }
