@@ -29,8 +29,8 @@ class DevUpdaterComponent extends Component
      * @var string[]
      */
     public $updaterServices = [
-        'tourhunter\devUpdater\services\MigrationUpdaterService',
         'tourhunter\devUpdater\services\ComposerUpdaterService',
+        'tourhunter\devUpdater\services\MigrationUpdaterService',
     ];
 
     /**
@@ -74,6 +74,7 @@ class DevUpdaterComponent extends Component
     protected $_gitHelper = null;
 
     /**
+     * @throws \yii\base\InvalidConfigException
      * @throws \yii\console\Exception
      * @throws \yii\web\NotFoundHttpException
      */
@@ -94,11 +95,10 @@ class DevUpdaterComponent extends Component
                 }
                 $this->checkAllUpdateNecessity();
 
+                if (($this->getUpdateNecessity() || $this->isRunningUpdate()
+                        || $this->hasWarnings()) && 0 !== strpos($route, $this->controllerId)) {
 
-                if (($this->getUpdateNecessity() || $this->hasWarnings()) && 0 !== strpos($route,
-                        $this->controllerId)) {
-                    \Yii::$app->getResponse()
-                        ->redirect(\Yii::$app->urlManager->createUrl([$this->controllerId . '/index']));
+                    \Yii::$app->catchAll = [$this->controllerId . '/index'];
                 }
             }
         }
@@ -257,7 +257,12 @@ class DevUpdaterComponent extends Component
         $id = false;
         $components = \Yii::$app->getComponents(true);
         foreach ($components as $componentId => $component) {
-            $componentClassName = is_object($component) ? get_class($component) : $component['class'];
+            $componentClassName = $component; // if $component is string
+            if (is_object($component)) {
+                $componentClassName = get_class($component);
+            } elseif (is_array($component)) {
+                $componentClassName = $component['class'];
+            }
             if ($componentClassName === self::className()) {
                 $id = $componentId;
                 break;

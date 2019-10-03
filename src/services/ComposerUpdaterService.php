@@ -67,7 +67,8 @@ class ComposerUpdaterService extends UpdaterService
     public function runUpdate()
     {
         $status = false;
-        $retCode = $this->_updateComponent->runShellCommand($this->_getComposerCommand() . ' install');
+        $output = [];
+        $retCode = $this->_updateComponent->runShellCommand($this->_getComposerCommand() . ' install', $output);
         if (0 === $retCode) {
             $status = true;
             $infoKey = DevUpdaterComponent::INFO_LAST_UPDATE_TIME . ':' . $this->title . ':'
@@ -75,8 +76,11 @@ class ComposerUpdaterService extends UpdaterService
             $this->_updateComponent->getInfoStorage()->setLastUpdateInfo($infoKey, time());
             $this->_updateComponent->getInfoStorage()->saveLastUpdateInfo();
         } else {
-            $this->_updateComponent->getInfoStorage()
-                ->addErrorInfo('Composer update has been failed! Please check the composer update manually.');
+            $errorMessage = 'Composer update has been failed! Please check the composer update manually.';
+            if (!empty($output)) {
+                $errorMessage .= '<br/> ' . implode('<br/>', $output);
+            }
+            $this->_updateComponent->getInfoStorage()->addErrorInfo($errorMessage);
             $this->_updateComponent->getInfoStorage()->saveLastUpdateInfo();
         }
 
@@ -132,7 +136,7 @@ class ComposerUpdaterService extends UpdaterService
 
         $output = [];
         $this->_updateComponent->runShellCommand('composer validate', $output);
-        $outputString = implode(' ', $output);
+        $outputString = implode('<br/>', $output);
 
         if (false !== strpos($outputString, 'does not contain valid JSON')) {
             $this->_updateComponent->addWarning('The composer.json file have errors.');
