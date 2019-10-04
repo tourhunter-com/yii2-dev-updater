@@ -29,7 +29,7 @@ use yii\helpers\Url;
         }
 
         .full-height {
-            height: 100vh;
+            min-height: 100vh;
         }
 
         .flex-center {
@@ -37,6 +37,7 @@ use yii\helpers\Url;
             display: flex;
             flex-direction: column;
             justify-content: center;
+            padding: 20px;
         }
 
         .position-ref {
@@ -133,23 +134,22 @@ use yii\helpers\Url;
             }, 3000);
         </script>
     <?php } else { ?>
-
-    <?php if ($devUpdater->getUpdateNecessity()) { ?>
-        <div class="message">
-            The project needs updating! (<?= implode(', ', $devUpdater->getNonUpdatedServiceTitles()) ?>)
-        </div>
-        <div class="btn-group">
-            <a class="btn btn-run" id="btn-run" onclick="return runUpdate()" href="">Run</a>
-            <a class="btn btn-discard" href="<?= Url::to([$devUpdater->controllerId . '/discard']) ?>">Discard</a>
-        </div>
-    <?php } else { ?>
-        <div class="message">
-            The project doesn't need updating!
-        </div>
-        <div class="btn-group">
-            <a class="btn btn-run" href="<?= Url::to(['/']) ?>">Return to site</a>
-        </div>
-    <?php } ?>
+        <?php if ($devUpdater->getUpdateNecessity()) { ?>
+            <div class="message">
+                The project needs updating! (<?= implode(', ', $devUpdater->getNonUpdatedServiceTitles()) ?>)
+            </div>
+            <div class="btn-group">
+                <a class="btn btn-run" id="btn-run" onclick="return runUpdate()" href="">Run</a>
+                <a class="btn btn-discard" href="<?= Url::to([$devUpdater->controllerId . '/discard']) ?>">Discard</a>
+            </div>
+        <?php } else { ?>
+            <div class="message">
+                The project doesn't need updating!
+            </div>
+            <div class="btn-group">
+                <a class="btn btn-run" href="<?= Url::to(['/']) ?>">Return to site</a>
+            </div>
+        <?php } ?>
     <?php } ?>
 </div>
 </body>
