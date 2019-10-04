@@ -88,7 +88,7 @@ class DevUpdaterComponent extends Component
             $requestData = \Yii::$app->getRequest()->resolve();
             $route = $requestData[0];
 
-            if (!\Yii::$app->request->isAjax || 0 == strpos($route, $this->controllerId)) {
+            if (!\Yii::$app->request->isAjax || 0 === strpos($route, $this->controllerId)) {
 
                 foreach ($this->updaterServices as $updaterServiceClass) {
                     $this->_updaterServicesObjects[] = new $updaterServiceClass($this);
