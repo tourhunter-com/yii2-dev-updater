@@ -19,6 +19,14 @@ class ComposerUpdaterService extends UpdaterService
     public $title = 'composer';
 
     /**
+     * @return array
+     */
+    public function getCommands()
+    {
+        return [$this->_getComposerCommand() . ' install'];
+    }
+
+    /**
      * @inheritdoc
      */
     public function checkUpdateNecessity()

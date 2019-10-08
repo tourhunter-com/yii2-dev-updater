@@ -51,6 +51,7 @@ use yii\helpers\Url;
 
         .btn-group {
             margin-top: 20px;
+            padding-bottom: 40px;
         }
 
         .btn-group .btn {
@@ -62,6 +63,7 @@ use yii\helpers\Url;
             border: none;
             border-radius: 4px;
             cursor: pointer;
+            margin-bottom: 30px;
         }
 
         .btn.btn-discard {
@@ -138,10 +140,21 @@ use yii\helpers\Url;
             <div class="message">
                 The project needs updating! (<?= implode(', ', $devUpdater->getNonUpdatedServiceTitles()) ?>)
             </div>
+            <div>
+                Choose your action:
+            </div>
             <div class="btn-group">
                 <a class="btn btn-run" id="btn-run" onclick="return runUpdate()" href="">Run</a>
                 <a class="btn btn-discard" href="<?= Url::to([$devUpdater->controllerId . '/discard']) ?>">Discard</a>
             </div>
+            <?php if (count($commands = $devUpdater->getAllUpdatingCommands())) { ?>
+            <div>
+                Also you may try to run the following commands in console for updating.:
+                <div>
+                    <pre><?= implode("\n", $commands); ?></pre>
+                </div>
+            </div>
+            <?php } ?>
         <?php } else { ?>
             <div class="message">
                 The project doesn't need updating!

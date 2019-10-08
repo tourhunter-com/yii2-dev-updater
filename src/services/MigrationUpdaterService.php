@@ -19,6 +19,14 @@ class MigrationUpdaterService extends UpdaterService
     public $title = 'migrations';
 
     /**
+     * @return array
+     */
+    public function getCommands()
+    {
+        return ['./yii migrate/up'];
+    }
+
+    /**
      * @var null|MigrationHelper
      */
     protected $_migrationHelper = null;
