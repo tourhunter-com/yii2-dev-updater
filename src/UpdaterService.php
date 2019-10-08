@@ -44,6 +44,14 @@ class UpdaterService
     }
 
     /**
+     * @return array
+     */
+    public function getCommands()
+    {
+        return [];
+    }
+
+    /**
      * @return string
      */
     public function getInfoKey()

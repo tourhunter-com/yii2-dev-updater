@@ -133,21 +133,21 @@ class DevUpdaterComponent extends Component
         $ret = true;
         if ($this->acquireLock()) {
             set_time_limit(0);
-            try {
-                if ($this->getUpdateNecessity()) {
-                    $this->getInfoStorage()->skipLastErrors();
-                    $this->getInfoStorage()->saveLastUpdateInfo();
-                    foreach ($this->_updaterServicesObjects as $updaterObject) {
-                        $ret = $updaterObject->runUpdate();
-                        if (!$ret) {
-                            break;
+            if ($this->getUpdateNecessity()) {
+                $this->getInfoStorage()->skipLastErrors();
+                $this->getInfoStorage()->saveLastUpdateInfo();
+                foreach ($this->_updaterServicesObjects as $updaterObject) {
+                    try {
+                        $status = $updaterObject->runUpdate();
+                        if (!$status) {
+                            $ret = false;
                         }
+                    } catch (\Exception $e) {
+                        $ret = false;
+                        $this->getInfoStorage()->addErrorInfo($e->getMessage());
+                        $this->getInfoStorage()->saveLastUpdateInfo();
                     }
                 }
-            } catch (\Exception $e) {
-                $ret = false;
-                $this->getInfoStorage()->addErrorInfo($e->getMessage());
-                $this->getInfoStorage()->saveLastUpdateInfo();
             }
             $this->releaseLock();
         } else {
@@ -221,6 +221,21 @@ class DevUpdaterComponent extends Component
         }
 
         return $titles;
+    }
+
+    /**
+     * @return array
+     */
+    public function getAllUpdatingCommands()
+    {
+        $commands = [];
+        foreach ($this->_updaterServicesObjects as $servicesObject) {
+            if ($servicesObject->getServiceUpdateNecessity()) {
+                $commands = array_merge($commands, $servicesObject->getCommands());
+            }
+        }
+
+        return $commands;
     }
 
     /**
