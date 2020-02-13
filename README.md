@@ -2,7 +2,9 @@
 
 Yii2 component to simplify composer and migrations updates
 
-It helps to track the presence of changes in migrations and composer packages after new commits in git, and allows to trigger updates with just one click in browser. 
+It helps to track the presence of changes in migrations and composer packages after new commits in git, and allows to trigger updates with just one click in browser.
+
+The repository is a part of the [TourHunter Organization](https://github.com/tourhunter-com).
 
 ## Code of Conduct
 
