@@ -11,7 +11,7 @@
     "migration"
   ],
   "homepage": "https://github.com/tourhunter-com/yii2-dev-updater",
-  "type": "yii2-extension",
+  "type": "library",
   "license": "MIT",
   "authors": [
     {
@@ -21,7 +21,7 @@
     }
   ],
   "support": {
-    "issues": "https://github.com/tourhunter-com/yii2-dev-updater/issues?state=open",
+    "issues": "https://github.com/tourhunter-com/yii2-dev-updater/issues",
     "source": "https://github.com/tourhunter-com/yii2-dev-updater"
   },
   "require": {

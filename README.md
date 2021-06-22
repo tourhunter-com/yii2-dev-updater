@@ -1,14 +1,10 @@
 # yii2-dev-updater
 
-Yii2 component to simplify composer and migrations updates
+Yii2 component to simplify composer and migrations updates.
 
 It helps to track the presence of changes in migrations and composer packages after new commits in git, and allows to trigger updates with just one click in browser.
 
-The repository is a part of the [TourHunter Organization](https://github.com/tourhunter-com).
-
-## Code of Conduct
-
-This project and everyone participating in it is governed by the [Code of Conduct](CODE_OF_CONDUCT.md).
+The repository is a part of the [TourHunter Organization](https://github.com/tourhunter-com). This project and everyone participating in it is governed by the [Code of Conduct](CODE_OF_CONDUCT.md).
 
 ## Contributing
 
@@ -43,7 +39,7 @@ return [
     'components' => [
         //.....
         'devUpdater' => [
-            'class' => 'tourhunter\devUpdater\DevUpdaterComponent',        
+            'class' => 'tourhunter\devUpdater\DevUpdaterComponent',
         ],
     ]
 ]
@@ -112,7 +108,6 @@ A username to execute update console commands.
     'sudoUser' => false,
 ```
 
-
 In case of web server working under default users like apache or www-data it may cause problems during some commands' execution.
 For example, composer needs a default user folder to cache data.
 To avoid this problem, the component supports sudo commands execution.
@@ -123,7 +118,7 @@ You need to add this into apache config:
 
 ```
 <IfModule mpm_itk_module>
-    # Permit using "sudo"                             
+    # Permit using "sudo"
     LimitUIDRange 0 65534
     LimitGIDRange 0 65534
 </IfModule>
